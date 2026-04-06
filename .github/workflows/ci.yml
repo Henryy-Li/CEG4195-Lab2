@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Downloads code
-      - uses: actions/checkout@v3
+        uses: actions/checkout@v3
       
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -26,17 +26,18 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps: 
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Log in to Docker Hub
-      with:
-        username: ${{secrets.DOCKERHUB_USERNAME}}
-        password: ${{secrets.DOCKERHUB_TOKEN}}
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        push: true
-        tags: ${{secrets.DOCKERHUB_USERNAME}}/lab2:latest
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{secrets.DOCKERHUB_USERNAME}}
+          password: ${{secrets.DOCKERHUB_TOKEN}}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{secrets.DOCKERHUB_USERNAME}}/lab2:latest
   
   deploy:
     needs: build-and-push
@@ -47,7 +48,7 @@ jobs:
       - name: Install Docker Compose
         run: |
           sudo apt-get update
-          sudo apt-get install -y docker-Compose
+          sudo apt-get install -y docker-compose
       
       - name: Deploy using Docker Compose
         run: docker-compose up -d
