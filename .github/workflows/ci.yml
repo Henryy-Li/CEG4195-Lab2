@@ -1,0 +1,2 @@
+- name: Run test
+  run: pytest test_api.py
