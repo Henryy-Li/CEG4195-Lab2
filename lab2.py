@@ -12,6 +12,14 @@ import torch
 from flask import Flask, request, jsonify       
 import torch.nn.functional as Functions  
 
+from dotenv import load_dotenv
+import os
+
+# ===== Get huggingface token  =====
+load_dotenv()
+HF_token = os.getenv("HF_token")
+print(os.getenv("HF_TOKEN"))
+
 # ===== Create the Flask app =====
 app = Flask(__name__)
 

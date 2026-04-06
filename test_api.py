@@ -1,4 +1,5 @@
-from lab1 import app
+from lab2 import app
+
 def test_predictions():
   client = app.test_client()
   response = client.post("/predict", json={"text": "That was great!"})
