@@ -17,7 +17,7 @@ import os
 
 # ===== Get huggingface token  =====
 load_dotenv()
-HF_token = os.getenv("HF_token")
+HF_token = os.getenv("HF_TOKEN")
 print(os.getenv("HF_TOKEN"))
 
 # ===== Create the Flask app =====
