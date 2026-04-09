@@ -1,3 +1,6 @@
+# This file does a few more steps of preprocessing on the
+# images and masks when they are called upon and used for training.
+
 # ============================================================
 #                       Import Statements
 # ============================================================
@@ -53,6 +56,7 @@ class houseDataset(Dataset):
     def __len__(self):
         return len(self.image_filenames)
 
+# Testing code
 if __name__ == "__main__":
     dataset = houseDataset("train")
     print(f"Number of images: {len(dataset)}")

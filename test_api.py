@@ -1,3 +1,5 @@
+# This file creates the test part of the CI/CD pipeline.
+
 # ============================================================
 #                       Import Statements
 # ============================================================
@@ -13,6 +15,8 @@ from lab2 import app
 def test_predictions():
   client = app.test_client()
 
+  # Send a fake test image to the pipeline to test if the response is correct,
+  # but without being too slow (if we sent a real image).
   artificalTestImage = Image.new("RGB", (256,256), color=(50,100,150))
   buffer = io.BytesIO()
   artificalTestImage.save(buffer, format="PNG")

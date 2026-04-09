@@ -2,8 +2,7 @@
 Course: CEG 4195
 Name:   Henry Li
 
-Instructions for Running the Container Locally:
-See lab document.
+Instructions for running the lab, see lab document.
 '''
 # ============================================================
 #                       Import Statements
@@ -69,7 +68,6 @@ def predict():                      #Function that does the image analysis
         outputs_int = (torch.sigmoid(outputs) > 0.5).squeeze().int()
 
     # === Create the JSON output ===
-    outputs_list = outputs_int.tolist()
     house_pixels = int(outputs_int.sum().item())
     total_pixels = outputs_int.numel()
     house_coverage = round(house_pixels/total_pixels*100,2)

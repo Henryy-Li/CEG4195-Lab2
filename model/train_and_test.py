@@ -1,3 +1,6 @@
+# This file is used to train the model using the training and validation sets.
+# Then it is used to test the model on the test set.
+
 # ============================================================
 #                       Import Statements
 # ============================================================
@@ -13,9 +16,8 @@ from torch.utils.data import DataLoader
 sys.path.append(os.path.dirname(__file__))
 from dataset_preparation import houseDataset
 
-
 # ============================================================
-#                       Configuration
+#            Configuration of the Model & Constants
 # ============================================================
 EPOCHS = 20
 BATCH_SIZE = 5
@@ -29,10 +31,12 @@ MODEL_FILE = "model/house_model.pth"
 # ============================================================
 print("Loading dataset splits...")
 
+# Load the dataset splits
 train_dataset = houseDataset("train")
 validation_dataset = houseDataset("validation")
 test_dataset = houseDataset("test")
 
+# Convert the splits to be stored in batches
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 validation_loader = DataLoader(validation_dataset, batch_size=BATCH_SIZE, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True)
@@ -76,18 +80,19 @@ for epoch in range (EPOCHS):
     training_loss = 0.0
     model.train()
 
+    # Iterate through each batch
     for images, masks in train_loader:
         images = images.to(DEVICE)
         masks = masks.to(DEVICE)
-
         optimizer.zero_grad()
+
         outputs = model(images)
         loss = loss_calculation(outputs, masks)
         loss.backward()
         optimizer.step()
         training_loss += loss.item()
 
-    training_loss /= len(train_loader)
+    training_loss /= len(train_loader)              # Average loss per epoch
     print("")
     print(f"Training loss for epoch {epoch+1}: {training_loss:.3f}")
 
@@ -98,6 +103,7 @@ for epoch in range (EPOCHS):
     validation_dice = 0.0
 
     with torch.no_grad():
+        # Iterate through each batch
         for images, masks in validation_loader:
             images = images.to(DEVICE)
             masks = masks.to(DEVICE)
@@ -106,13 +112,14 @@ for epoch in range (EPOCHS):
             loss = loss_calculation(outputs, masks)
             validation_loss += loss.item()
 
-            outputs_int = (torch.sigmoid(outputs) > 0.5).int()
+            outputs_int = (torch.sigmoid(outputs) > 0.5).int()      # Converts model outputs to probabilities and then to integers for the mask.
             masks_int = masks.int()
-            tp, fp, fn, tn = smp.metrics.get_stats(outputs_int, masks_int, mode="binary")
+
+            tp, fp, fn, tn = smp.metrics.get_stats(outputs_int, masks_int, mode="binary")               # Metrics
             validation_iou += smp.metrics.iou_score(tp, fp, fn, tn, reduction="micro").item()
             validation_dice += smp.metrics.f1_score(tp, fp, fn, tn, reduction="micro").item()
     
-    validation_loss /= len(validation_loader)
+    validation_loss /= len(validation_loader)                               # Average metric values for this epoch.
     validation_iou /= len(validation_loader)
     validation_dice /= len(validation_loader)
     print(f"Validation loss for epoch {epoch+1}: {validation_loss:.3f}")
@@ -148,6 +155,7 @@ with torch.no_grad():
         outputs = model(images)
         outputs_int = (torch.sigmoid(outputs) > 0.5).int()
         masks_int = masks.int()
+
         tp, fp, fn, tn = smp.metrics.get_stats(outputs_int, masks_int, mode="binary")
         test_iou += smp.metrics.iou_score(tp, fp, fn, tn, reduction="micro").item()
         test_dice += smp.metrics.f1_score(tp, fp, fn, tn, reduction="micro").item()
@@ -166,10 +174,11 @@ print("Visualizing predictions...")
 
 model.eval()
 
-num_examples = min(3, len(test_dataset))
+num_examples = min(3, len(test_dataset))                                            # Display a max of 3 sets of aerial images, ground truth masks, and predicted masks.
 figure, axes = plt.subplots(num_examples, 3, figsize=(12,num_examples*4))
 
 with torch.no_grad():
+    # Iterate by image
     for i, (image, mask) in enumerate(test_dataset):
         if i>=num_examples:
             break

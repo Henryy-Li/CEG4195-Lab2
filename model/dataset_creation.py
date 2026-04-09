@@ -1,4 +1,5 @@
 # Run this file once before running the model itself.
+# This file creates our dataset. Pools together our images (features) and the masks (labels).
 
 # ============================================================
 #                       Import Statements
@@ -17,7 +18,6 @@ print("Dataset preparation starting...")
 load_dotenv()
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-
 # ============================================================
 #                 Create Input & Output Directories
 # ============================================================
@@ -34,6 +34,9 @@ print("Dataset loaded!")
 # ============================================================
 #                       Mask Function
 # ============================================================
+# This function is used to convert the bounding box's coordinates to an array mask.
+# The array mask marks where buildings are in the input image.
+
 def mask(bounding_box, image):
     x_min, y_min, width, height = bounding_box
     x_min, y_min, width, height = int(x_min), int(y_min), int(width), int(height)
@@ -43,9 +46,16 @@ def mask(bounding_box, image):
     last_y = y_min + height
     mask_array[x_min:last_x, y_min:last_y] = np.ones((width, height))
     return mask_array.T
+
 # ============================================================
 #                       Process each image     
 # ============================================================
+# For each image in each split,
+# mask all building objects and combine the individual building masks into one total mask.
+# Thus, one mask per image of all the buildings in that image.
+
+# Save the image (feature) and mask (label).
+
 print("Processing images...")
 
 for split in ["train", "validation", "test"]:
@@ -53,15 +63,17 @@ for split in ["train", "validation", "test"]:
     os.makedirs(f"data/images/{split}", exist_ok=True)
     os.makedirs(f"data/masks/{split}", exist_ok=True)
 
+    # Iterate through all images.
     for index, data_sample in enumerate(dataset[split]):
-        # Image specific
         print(f"Image {index+1}/{len(dataset[split])}")
+        
         image = data_sample["image"]
-        combined_mask = np.zeros((image.height, image.width))
+        combined_mask = np.zeros((image.height, image.width))       # Stores total mask.
 
+        # Iterate through all building masks in the current image.
         for house_mask in data_sample["objects"]["bbox"]:
             house_seg = mask(house_mask, image)
-            combined_mask = np.logical_or(combined_mask, house_seg).astype(int)
+            combined_mask = np.logical_or(combined_mask, house_seg).astype(int)     # Combine the masks
 
         image.save(f"data/images/{split}/{index}.png")
         mask_image = Image.fromarray((combined_mask * 255).astype(np.uint8))
